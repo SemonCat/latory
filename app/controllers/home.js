@@ -16,7 +16,7 @@ router.get('/', function(req, res, next) {
   });
 });
 
-router.post('/open_app', function(req, res, next) {
+router.get('/open_app', function(req, res, next) {
   var pkgName = req.query.pkg_name || "com.android.chrome";
 
   console.log(pkgName);
