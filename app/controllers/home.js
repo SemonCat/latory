@@ -17,6 +17,38 @@ router.get('/', function(req, res, next) {
   });
 });
 
+var currentScheduleData;
+
+router.get('/schedule', function(req, res, next) {
+  res.json(currentScheduleData);
+});
+
+
+router.post('/schedule', function(req, res, next) {
+  // Prepare a message to be sent
+  currentScheduleData = req.body;
+
+  var message = new gcm.Message({
+    data: {
+      "schedule_data_id": req.body
+    }
+  });
+
+  sender.send(message, {
+    "to": "/topics/schedule"
+  }, function(err, response) {
+    if (err) {
+      console.error(err);
+      res.sendStatus(404);
+      return;
+    }
+
+    console.log(response);
+    res.sendStatus(201);
+  });
+
+});
+
 router.get('/open_app', function(req, res, next) {
   var pkgName = req.query.pkg_name || "";
 
