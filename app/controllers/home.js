@@ -1,7 +1,7 @@
 var express = require('express'),
   router = express.Router(),
   Article = require('../models/article');
-
+var uuidV4 = require('uuid/v4');
 var gcm = require('node-gcm');
 var sender = new gcm.Sender('AAAAwHckatg:APA91bGSPVowZZcaDU-6ENfwhfa6IlWsY2BTYR1vr66my-FGoc-9hWrDO03EmYtFSoi2Q5PIAMfZF2MJ7usZLKl4i_bVrLamRkb4KAfnoxeF7kIIMrrAxizuRVqgSOsXBk7-knS6x3Uw');
 
@@ -17,20 +17,27 @@ router.get('/', function(req, res, next) {
   });
 });
 
-var currentScheduleData;
+var currentScheduleDataArray = [];
 
-router.get('/schedule', function(req, res, next) {
-  res.json(currentScheduleData);
+router.get('/schedule/:id', function(req, res, next) {
+  var data = currentScheduleDataArray[req.params.id];
+
+  if (data) {
+    res.json(data);
+  } else {
+    res.sendStatus(404);
+  }
 });
-
 
 router.post('/schedule', function(req, res, next) {
   // Prepare a message to be sent
-  currentScheduleData = req.body;
+
+  var dataId = uuidV4();
+  currentScheduleDataArray[dataId] = req.body;
 
   var message = new gcm.Message({
     data: {
-      "schedule_data_id": req.body
+      "schedule_data_id": dataId
     }
   });
 
@@ -44,7 +51,7 @@ router.post('/schedule', function(req, res, next) {
     }
 
     console.log(response);
-    res.sendStatus(201);
+    res.json({"schedule_data_id": dataId});
   });
 
 });
