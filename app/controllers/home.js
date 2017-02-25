@@ -5,6 +5,11 @@ var uuidV4 = require('uuid/v4');
 var gcm = require('node-gcm');
 var sender = new gcm.Sender('AAAAwHckatg:APA91bGSPVowZZcaDU-6ENfwhfa6IlWsY2BTYR1vr66my-FGoc-9hWrDO03EmYtFSoi2Q5PIAMfZF2MJ7usZLKl4i_bVrLamRkb4KAfnoxeF7kIIMrrAxizuRVqgSOsXBk7-knS6x3Uw');
 
+var youtubeApi = require("youtube-api");
+var moment = require('moment');
+
+youtubeApi.authenticate({type: "key", key: "AIzaSyBkwJDlJRbB7Q5TnIo-Jx2UCM5pldWKS40"});
+
 module.exports = function(app) {
   app.use('/', router);
 };
@@ -110,3 +115,55 @@ router.get('/close_app', function(req, res, next) {
   });
 
 });
+
+router.get('/youtube_detail', function(req, res, next) {
+
+  var youtube_url = req.query.video_url;
+  var youtube_id = youtube_id_parser(youtube_url);
+
+  if (youtube_url || youtube_id) {
+    youtubeApi.videos.list({
+      part: 'contentDetails',
+      "id": youtube_id
+    }, function(err, data) {
+
+      console.log(data.items);
+
+      if (err) {
+        next(err);
+      } else {
+        var firstItem = data.items[0];
+
+        if (firstItem) {
+          var durationString = firstItem.contentDetails.duration;
+
+          var duration = moment.duration(durationString).asMilliseconds();
+
+          console.log(duration);
+
+          res.json({
+            "url": youtube_url,
+            "id": youtube_id,
+            "duration": duration
+          });
+
+        } else {
+          res.status(500).send({error: 'video not found'});
+        }
+      }
+
+    });
+
+  } else {
+    res.status(500).send({error: 'video url is empty or not correct'});
+  }
+
+});
+
+function youtube_id_parser(url) {
+  var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+  var match = url.match(regExp);
+  return (match && match[7].length == 11)
+    ? match[7]
+    : false;
+}
