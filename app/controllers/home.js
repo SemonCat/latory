@@ -123,7 +123,7 @@ router.get('/youtube_detail', function(req, res, next) {
 
   if (youtube_url || youtube_id) {
     youtubeApi.videos.list({
-      part: 'contentDetails',
+      part: 'contentDetails,snippet',
       "id": youtube_id
     }, function(err, data) {
 
@@ -137,13 +137,17 @@ router.get('/youtube_detail', function(req, res, next) {
         if (firstItem) {
           var durationString = firstItem.contentDetails.duration;
 
+          var title = firstItem.snippet.title;
+
           var duration = moment.duration(durationString).asMilliseconds();
 
           console.log(duration);
+          console.log(title);
 
           res.json({
             "url": youtube_url,
             "id": youtube_id,
+            "title": title,
             "duration": duration
           });
 
