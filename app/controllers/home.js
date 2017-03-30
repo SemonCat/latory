@@ -61,6 +61,32 @@ router.post('/schedule', function(req, res, next) {
 
 });
 
+router.post('/sendImgUrl', function(req, res, next) {
+  // Prepare a message to be sent
+
+  var imgUrl = req.query.img_url ;
+
+  var message = new gcm.Message({
+    data: {
+      "img_url": imgUrl
+    }
+  });
+
+  sender.send(message, {
+    "to": "/topics/img"
+  }, function(err, response) {
+    if (err) {
+      console.error(err);
+      res.sendStatus(404);
+      return;
+    }
+
+    console.log(response);
+    res.sendStatus(201);
+  });
+
+});
+
 router.get('/open_app', function(req, res, next) {
   var pkgName = req.query.pkg_name || "";
 
