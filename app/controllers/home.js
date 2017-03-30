@@ -61,7 +61,7 @@ router.post('/schedule', function(req, res, next) {
 
 });
 
-router.post('/sendImgUrl', function(req, res, next) {
+router.post('/send_img_url', function(req, res, next) {
   // Prepare a message to be sent
 
   var imgUrl = req.query.img_url ;
