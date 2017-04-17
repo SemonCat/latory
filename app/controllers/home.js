@@ -87,6 +87,45 @@ router.post('/send_img_url', function(req, res, next) {
 
 });
 
+var currentPhoneDataArray = [];
+
+router.get('/data/:id', function(req, res, next) {
+  var data = currentPhoneDataArray[req.params.id];
+
+  if (data) {
+    res.json(data);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+router.post('/send_data_to_phone', function(req, res, next) {
+  // Prepare a message to be sent
+
+  var dataId = uuidV4();
+  currentPhoneDataArray[dataId] = req.body;
+
+  var message = new gcm.Message({
+    data: {
+      "data_id": dataId
+    }
+  });
+
+  sender.send(message, {
+    "to": "/topics/to_phone_data"
+  }, function(err, response) {
+    if (err) {
+      console.error(err);
+      res.sendStatus(404);
+      return;
+    }
+
+    console.log(response);
+    res.json({"data_id": dataId});
+  });
+
+});
+
 router.get('/open_app', function(req, res, next) {
   var pkgName = req.query.pkg_name || "";
 
